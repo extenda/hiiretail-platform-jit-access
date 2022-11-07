@@ -18,9 +18,21 @@
             function validate() {
                 var checkboxes = document.querySelectorAll('input[type="checkbox"]');
                 var textboxes = document.querySelectorAll('input[type="text"]');
-                var valid = Array.prototype.slice.call(checkboxes).some(x => x.checked) &&
-                    Array.prototype.slice.call(textboxes).some(x => x.value != null && x.value.trim() != "");
-
+                var regex = new RegExp(/(.{10,})*/);
+                var type = "";
+                $( "select option:selected" ).each(function() {
+                  type += $( this ).text() + "";
+                  switch (type) {
+                    case "Task":
+                      regex = new RegExp(/(^[A-z]{3,4}-[0-9]{1,5}$)/);
+                    break;
+                    case "Other":
+                      regex = new RegExp(/(.{10,}$)/);
+                    break;
+                  }
+                });
+                 var valid = Array.prototype.slice.call(checkboxes).some(x => x.checked) &&
+                     Array.prototype.slice.call(textboxes).some(x => x.value != null && x.value.trim() != "" && regex.test(x.value));
                 if (valid) {
                     document.querySelectorAll('input[type="submit"]')[0].disabled = false;
                 }
@@ -42,12 +54,12 @@
             function showHomePane(result) {
                 showWarnings(result);
                 $('#justification-hint').text(result.justificationHint);
-
                 $.each(result.roleBindings, function(i, role) {
                     var disabled = role.status == 'ACTIVATED' ? "disabled='disabled'" : '';
                     var row = `<tr>
                             <td>
                                 <input type="checkbox"
+                                   id="check"
                                    name="roles"
                                    value="${role.resourceName}|${role.fullResourceName}|${role.role}"
                                    onchange="validate()"
@@ -124,7 +136,7 @@
             <div id="home-pane" class="pane">
                 <h1 class="display-4">Request just-in-time access</h1>
 
-                <form action="/api/" method="POST" id="activate-form" autocomplete="off">
+                <form action="/api/" method="POST" id="activate-form" autocomplete="off" class="target">
                     <p>
                     <table id="eligible-roles" class="roletable">
                         <tr>
@@ -136,14 +148,20 @@
                     </table>
                     </p>
                     <p>
-                    <fieldset>
-                        <legend>Justification (<span id="justification-hint"></span>)</legend>
-                        <input name="justification"
-                               type="text"
-                               maxlength="32"
-                               oninput="validate()"/>
-                    </fieldset>
+
+                    <label for="justification">Justification type:</label>
+                      <select class="target" id="justification-type" name="justification-type">
+                        <option value="Task" selected="selected">Task</option>
+                        <option value="Other">Other</option>
+                      </select>
                     </p>
+                    <fieldset>
+                      <legend id="Justification-title">Enter jira task (<span id="justification-hint"></span>)</legend>
+                      <input name="justification"
+                             type="text"
+                             maxlength="52"
+                             oninput="validate()"/>
+                  </fieldset>
                     <p>
                     <div id="submit">
                         <input type="submit" value="Request access" class="button" disabled="disabled"/>
@@ -184,5 +202,27 @@
         </div>
     </div>
 </div>
+<script>
+  $( "#justification-type" )
+  .change(function () {
+    var str = "";
+    var type = "";
+    $( "select option:selected" ).each(function() {
+      type += $( this ).text() + "";
+      switch (type) {
+        case "Task": 
+        str += "Enter jira task";
+        break;
+        case "Other": 
+        str += "Justification (min 10 characters)";
+        break;
+      }
+    });
+    validate();
+    $( "#Justification-title" ).text( str );
+  })
+  .change();
+
+</script>
 </body>
 </html>
