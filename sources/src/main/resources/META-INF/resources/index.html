@@ -54,14 +54,6 @@
             function showHomePane(result) {
                 showWarnings(result);
                 $('#justification-hint').text(result.justificationHint);
-                // ####for development
-                // result.roleBindings[0] = {
-                //   role: {
-                //     status: true,
-                //     resourceName: "test",
-                //     role: "test",
-                //   }
-                // }
                 $.each(result.roleBindings, function(i, role) {
                     console.log(role, i);
                     var disabled = role.status == 'ACTIVATED' ? "disabled='disabled'" : '';
