@@ -55,7 +55,6 @@
                 showWarnings(result);
                 $('#justification-hint').text(result.justificationHint);
                 $.each(result.roleBindings, function(i, role) {
-                    console.log(role, i);
                     var disabled = role.status == 'ACTIVATED' ? "disabled='disabled'" : '';
                     var row = `<tr>
                             <td>
