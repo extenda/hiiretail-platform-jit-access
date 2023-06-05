@@ -22,8 +22,9 @@
 package com.google.solutions.jitaccess.web;
 
 import com.google.api.client.json.webtoken.JsonWebSignature;
-import com.google.solutions.jitaccess.core.adapters.DeviceInfo;
-import com.google.solutions.jitaccess.core.adapters.UserId;
+import com.google.api.client.json.webtoken.JsonWebToken;
+import com.google.solutions.jitaccess.core.data.DeviceInfo;
+import com.google.solutions.jitaccess.core.data.UserId;
 
 import java.util.Collection;
 import java.util.List;
@@ -31,37 +32,44 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class IapAssertion {
-  private final JsonWebSignature token;
+  private final JsonWebToken.Payload payload;
 
-  public IapAssertion(JsonWebSignature token) {
-    this.token = token;
+  public IapAssertion(JsonWebToken.Payload payload) {
+    this.payload = payload;
   }
 
-  /** Extract user information */
+  public IapAssertion(JsonWebSignature payload) {
+    this(payload.getPayload());
+  }
+
+  /**
+   * Extract user information
+   */
   public UserId getUserId() {
     return new UserId(
-        this.token.getPayload().get("sub").toString(),
-        this.token.getPayload().get("email").toString());
+      this.payload.get("sub").toString(),
+      this.payload.get("email").toString());
   }
 
-  /** Extract device information (if available) */
+  /**
+   * Extract device information (if available)
+   */
   public DeviceInfo getDeviceInfo() {
     String deviceId = "unknown";
     List<String> accessLevels = List.of();
 
-    if (this.token.getPayload().containsKey("google"))
-    {
-      var googleClaim = (Map<?, ?>)this.token.getPayload().get("google");
+    if (this.payload.containsKey("google")) {
+      var googleClaim = (Map<?, ?>) this.payload.get("google");
 
       if (googleClaim.containsKey("device_id")) {
         deviceId = googleClaim.get("device_id").toString();
       }
 
       if (googleClaim.containsKey("access_levels")) {
-        accessLevels = ((Collection<?>)googleClaim.get("access_levels"))
-            .stream()
-            .map(a -> a.toString())
-            .collect(Collectors.toList());
+        accessLevels = ((Collection<?>) googleClaim.get("access_levels"))
+          .stream()
+          .map(Object::toString)
+          .collect(Collectors.toList());
       }
     }
 

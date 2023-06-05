@@ -25,9 +25,6 @@
 # Log file
 *.log
 
-# IntelliJ
-.idea/
-
 # Package Files #
 *.jar
 *.war
@@ -44,4 +41,7 @@ replay_pid*
 target/
 app.yaml
 test.properties
-A-development.md
+
+runConfigurations/
+.metals
+.vscode
